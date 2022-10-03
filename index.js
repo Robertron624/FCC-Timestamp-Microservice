@@ -3,6 +3,10 @@
 
 // init project
 var express = require('express');
+const bodyParser = require('body-parser')
+require('dotenv').config()
+
+
 var app = express();
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
@@ -12,6 +16,8 @@ app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 20
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
+
+app.use(bodyParser.urlencoded({extended:false}))
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (req, res) {
@@ -24,6 +30,53 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
+app.get('/api/:date?', (req, res)=>{
+  const date = req.params.date
+
+  let myDate;
+  let responseObject;
+
+  if(date === undefined){
+    const now = new Date()
+
+    const myDateUnix = now.getTime()
+    
+    const myDateUtc = now.toUTCString()
+
+
+    responseObject = {
+      "unix": myDateUnix,
+      "utc": myDateUtc
+    }
+  }
+  else{
+    if(Number.isNaN(Number(date))){
+      myDate = new Date(date)
+    }
+    else{
+      myDate = new Date(parseInt(date))
+      console.log('estoy en el else que indica que es un entero')
+    }
+  
+    if(myDate == 'Invalid Date'){
+      responseObject = {
+        error: "Invalid Date"
+      }
+    }
+    else{
+      const myDateUnix = myDate.getTime()
+    
+      const myDateUtc = myDate.toUTCString()
+  
+      responseObject = {
+        "unix": myDateUnix,
+        "utc": myDateUtc
+      }
+    }
+  }
+
+  res.send(responseObject)
+})
 
 
 // listen for requests :)
